@@ -15,6 +15,11 @@
   <img src="https://img.shields.io/badge/License-MIT-4CAF50" alt="License" />
 </p>
 
+<p align="center">
+  <em>"— ¿Para qué sirve eso?"</em><br>
+  <em>"— ¿Nunca has querido revisar Daka desde la terminal...?"</em>
+</p>
+
 ---
 
 ## Índice
