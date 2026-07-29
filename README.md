@@ -1,12 +1,11 @@
 <p align="center">
-  <!-- LOGO_PLACEHOLDER: Reemplaza la URL de abajo con la imagen o ruta de tu logo -->
-  <img src="https://via.placeholder.com/150?text=LOGO+DAKA-CLI" alt="daka-cli logo" width="180" />
+  <img src="static/daka-cli-logo.png" alt="daka-cli logo" width="340" />
 </p>
 
 <h1 align="center">daka-cli</h1>
 
 <p align="center">
-  CLI no oficial para explorar productos, buscar ofertas, consultar precios en USD y Bs., ubicar sucursales físicas y calcular la tasa de cambio de <strong>Tiendas Daka</strong> (Venezuela) desde tu terminal.
+  CLI no oficial para explorar productos, buscar ofertas, consultar precios en USD y Bs., armar presupuestos, ubicar sucursales físicas y calcular la tasa de cambio de <strong>Tiendas Daka</strong> (Venezuela) desde tu terminal.
 </p>
 
 <p align="center">
@@ -32,6 +31,27 @@ pip install -e .
 ---
 
 ## 🚀 Guía de Uso
+
+### 🛒 Carrito y Simulador de Presupuesto
+Arma una cotización o presupuesto agregando productos al carrito virtual local. Calcula totales en USD y VEF (a la tasa de Daka) y permite exportar a CSV, JSON o TXT.
+
+```bash
+# Agregar un producto al carrito (por slug, ID o búsqueda)
+daka carrito add "televisor lg"
+daka carrito add "nevera midea" -n 2
+
+# Ver productos en el carrito y total cotizado en USD y Bs.
+daka carrito
+
+# Eliminar un producto por índice (#) o nombre
+daka carrito rm 1
+
+# Exportar cotización a archivo CSV, JSON o TXT
+daka carrito export cotizacion_cocina.csv
+
+# Vaciar carrito
+daka carrito clear
+```
 
 ### 🔍 Buscar Productos
 Busca productos por texto, categoría, rango de precio o criterio de orden.

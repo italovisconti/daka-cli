@@ -15,6 +15,7 @@ from rich.table import Table
 from rich.tree import Tree
 from typer.core import TyperCommand, TyperGroup, TyperOption
 
+from .cart import Cart
 from .client import Category, DakaClient, DakaError, Product, StoreBranch, TAG_MAP
 from .image_render import TerminalProtocol, render_image
 
@@ -562,5 +563,156 @@ def open_cmd(
     webbrowser.open(p.web_url)
 
 
+cart_app = typer.Typer(no_args_is_help=False, help="Gestionar carrito de compras y cotizaciones de presupuesto.", cls=SpanishTyperGroup)
+
+
+@cart_app.callback(invoke_without_command=True)
+def cart_main(ctx: typer.Context) -> None:
+    if ctx.invoked_subcommand is None:
+        cart_status_cmd()
+
+
+@cart_app.command("ver", help="Mostrar productos en el carrito y total cotizado.", cls=SpanishTyperCommand)
+@cart_app.command("status", help="Mostrar productos en el carrito y total cotizado.", cls=SpanishTyperCommand)
+def cart_status_cmd() -> None:
+    cart = Cart.load()
+    if not cart.items:
+        console.print(
+            Panel(
+                "[yellow]El carrito de compras está vacío.[/]\n"
+                "Agrega productos usando: [bold cyan]daka carrito add <PRODUCTO>[/]",
+                title="[bold cyan]🛒 Carrito / Presupuesto Daka[/]",
+                border_style="cyan",
+            )
+        )
+        return
+
+    client = DakaClient()
+    with _spinner("Calculando precios y tasa Daka..."):
+        try:
+            bcv_rate = client.get_implied_bcv_rate()
+        except DakaError:
+            bcv_rate = 0.0
+
+    table = Table(
+        title=f"🛒 Carrito de Compras / Presupuesto ({cart.total_items} items)",
+        box=None,
+        header_style="bold magenta",
+        title_style="bold cyan",
+    )
+    table.add_column("#", style="dim", width=3)
+    table.add_column("Producto", style="bold white")
+    table.add_column("Cantidad", style="bold yellow", justify="center", width=10)
+    table.add_column("Precio USD", style="green", justify="right")
+    table.add_column("Total USD", style="bold green", justify="right")
+    table.add_column("Total VEF", style="bold yellow", justify="right")
+
+    for idx, item in enumerate(cart.items, start=1):
+        total_vef = item.total_usd * bcv_rate if bcv_rate else 0.0
+        table.add_row(
+            str(idx),
+            escape(item.title),
+            str(item.quantity),
+            _format_price_usd(item.price_usd),
+            _format_price_usd(item.total_usd),
+            _format_price_vef(total_vef) if bcv_rate else "[dim]N/A[/]",
+        )
+
+    console.print(table)
+
+    grand_total_usd = cart.grand_total_usd
+    grand_total_vef = grand_total_usd * bcv_rate if bcv_rate else 0.0
+
+    summary_text = f"[bold white]Total en USD:[/] [bold green size=16]${grand_total_usd:,.2f}[/]\n"
+    if bcv_rate:
+        summary_text += f"[bold white]Total en VEF (Bs.):[/] [bold yellow size=16]{_format_price_vef(grand_total_vef)}[/]\n"
+        summary_text += f"[dim]Tasa de cambio implícita: 1 USD = {bcv_rate:,.2f} VEF[/]"
+
+    console.print(Panel(summary_text, title="[bold cyan]💰 Resumen del Presupuesto[/]", border_style="cyan"))
+
+
+@cart_app.command("agregar", help="Agregar un producto al carrito de compras.", cls=SpanishTyperCommand)
+@cart_app.command("add", help="Agregar un producto al carrito de compras.", cls=SpanishTyperCommand)
+def cart_add_cmd(
+    producto: Annotated[str, typer.Argument(help="Slug, ID o texto de búsqueda del producto")],
+    cantidad: Annotated[int, typer.Option("--cantidad", "-n", help="Cantidad a agregar")] = 1,
+) -> None:
+    client = DakaClient()
+
+    with _spinner(f"Buscando '{producto}'..."):
+        try:
+            try:
+                p = client.get_product(producto)
+            except DakaError:
+                results = client.search_products(producto, limit=1)
+                if not results:
+                    fail(f"No se encontró ningún producto coincidente con '{producto}'.")
+                    return
+                p = client.get_product(results[0].handle)
+        except DakaError as e:
+            fail(str(e))
+            return
+
+    cart = Cart.load()
+    item = cart.add_product(p, quantity=cantidad)
+    console.print(
+        f"[bold green]✓[/] Agregado [bold white]{escape(item.title)}[/] (x{cantidad}) al carrito.\n"
+        f"Total en carrito: [bold green]${cart.grand_total_usd:,.2f} USD[/] ({cart.total_items} productos)."
+    )
+
+
+@cart_app.command("eliminar", help="Eliminar un producto del carrito.", cls=SpanishTyperCommand)
+@cart_app.command("rm", help="Eliminar un producto del carrito.", cls=SpanishTyperCommand)
+def cart_remove_cmd(
+    target: Annotated[str, typer.Argument(help="Número (#), handle o nombre del producto a remover")],
+) -> None:
+    cart = Cart.load()
+    removed = cart.remove_item(target)
+
+    if not removed:
+        fail(f"No se encontró el item '{target}' en el carrito.")
+        return
+
+    console.print(
+        f"[bold red]✓[/] Removido [bold white]{escape(removed.title)}[/] del carrito.\n"
+        f"Nuevo total: [bold green]${cart.grand_total_usd:,.2f} USD[/] ({cart.total_items} productos)."
+    )
+
+
+@cart_app.command("vaciar", help="Vaciar todos los productos del carrito.", cls=SpanishTyperCommand)
+@cart_app.command("clear", help="Vaciar todos los productos del carrito.", cls=SpanishTyperCommand)
+def cart_clear_cmd() -> None:
+    cart = Cart.load()
+    cart.clear()
+    console.print("[bold yellow]✓ El carrito ha sido vaciado completamente.[/]")
+
+
+@cart_app.command("exportar", help="Exportar cotización/presupuesto a un archivo (CSV, JSON, TXT).", cls=SpanishTyperCommand)
+@cart_app.command("export", help="Exportar cotización/presupuesto a un archivo (CSV, JSON, TXT).", cls=SpanishTyperCommand)
+def cart_export_cmd(
+    archivo: Annotated[str, typer.Argument(help="Ruta o nombre del archivo (ej: cotizacion.csv)")],
+    formato: Annotated[str, typer.Option("--formato", "-f", help="Formato: csv, json, txt")] = "csv",
+) -> None:
+    cart = Cart.load()
+    if not cart.items:
+        fail("El carrito está vacío. Agrega productos antes de exportar un presupuesto.")
+        return
+
+    client = DakaClient()
+    with _spinner("Calculando tasa Daka para exportación..."):
+        try:
+            bcv_rate = client.get_implied_bcv_rate()
+        except DakaError:
+            bcv_rate = 0.0
+
+    output_path = cart.export(archivo, fmt=formato, bcv_rate=bcv_rate)
+    console.print(f"[bold green]✓ Presupuesto exportado exitosamente a:[/] [cyan]{output_path}[/]")
+
+
+app.add_typer(cart_app, name="carrito")
+app.add_typer(cart_app, name="presupuesto")
+
+
 if __name__ == "__main__":
     app()
+
