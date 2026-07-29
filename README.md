@@ -26,11 +26,11 @@
 
 - [Instalación](#instalación)
 - [Guía de Uso](#guía-de-uso)
-  - [Carrito y Simulador de Presupuesto](#carrito-y-simulador-de-presupuesto)
   - [Buscar Productos](#buscar-productos)
-  - [Ofertas y Promociones](#ofertas-y-promociones)
   - [Ver y Abrir Productos](#ver-y-abrir-productos)
+  - [Ofertas y Promociones](#ofertas-y-promociones)
   - [Comparar Productos](#comparar-productos)
+  - [Carrito y Simulador de Presupuesto](#carrito-y-simulador-de-presupuesto)
   - [Sucursales Físicas](#sucursales-físicas)
   - [Tasa de Cambio y Conversión](#tasa-de-cambio-y-conversión)
   - [Categorías](#categorías)
@@ -53,6 +53,49 @@ pip install -e .
 
 ## Guía de Uso
 
+### Buscar Productos
+Busca productos por texto, categoría, rango de precio o criterio de orden.
+
+```bash
+# Búsqueda simple
+daka buscar "televisor"
+
+# Ordenar por precio ascendente
+daka buscar "televisor" -s precio-asc
+
+# Filtrar por categoría y rango de precio (USD)
+daka buscar "aire" -c "Aires y Ventilación" --min-precio 100 --max-precio 300
+```
+
+### Ver y Abrir Productos
+Muestra la ficha técnica completa o abre el producto en el navegador.
+
+```bash
+# Ver ficha técnica
+daka ver <SLUG_O_ID_PRODUCTO>
+
+# Abrir en el navegador web
+daka abrir <SLUG_O_ID_PRODUCTO>
+```
+
+### Ofertas y Promociones
+Consulta promociones destacadas y productos con mayor descuento.
+
+```bash
+# Ofertas del día
+daka ofertas
+
+# Mayores descuentos
+daka ofertas --tipo descuentos
+```
+
+### Comparar Productos
+Compara especificaciones y precios de dos productos lado a lado.
+
+```bash
+daka comparar <SLUG_PRODUCTO_1> <SLUG_PRODUCTO_2>
+```
+
 ### Carrito y Simulador de Presupuesto
 Arma una cotización o presupuesto agregando productos al carrito virtual local. Calcula totales en USD y VEF (a la tasa de Daka) y permite exportar a CSV, JSON o TXT.
 
@@ -72,49 +115,6 @@ daka carrito export cotizacion_cocina.csv
 
 # Vaciar carrito
 daka carrito clear
-```
-
-### Buscar Productos
-Busca productos por texto, categoría, rango de precio o criterio de orden.
-
-```bash
-# Búsqueda simple
-daka buscar "televisor"
-
-# Ordenar por precio ascendente
-daka buscar "televisor" -s precio-asc
-
-# Filtrar por categoría y rango de precio (USD)
-daka buscar "aire" -c "Aires y Ventilación" --min-precio 100 --max-precio 300
-```
-
-### Ofertas y Promociones
-Consulta promociones destacadas y productos con mayor descuento.
-
-```bash
-# Ofertas del día
-daka ofertas
-
-# Mayores descuentos
-daka ofertas --tipo descuentos
-```
-
-### Ver y Abrir Productos
-Muestra la ficha técnica completa o abre el producto en el navegador.
-
-```bash
-# Ver ficha técnica
-daka ver <SLUG_O_ID_PRODUCTO>
-
-# Abrir en el navegador web
-daka abrir <SLUG_O_ID_PRODUCTO>
-```
-
-### Comparar Productos
-Compara especificaciones y precios de dos productos lado a lado.
-
-```bash
-daka comparar <SLUG_PRODUCTO_1> <SLUG_PRODUCTO_2>
 ```
 
 ### Sucursales Físicas
