@@ -2,17 +2,17 @@
   <img src="static/daka-cli-logo.png" alt="daka-cli logo" width="340" />
 </p>
 
-<h1 align="center">daka-cli</h1>
-
-<p align="center">
-  CLI no oficial para explorar productos, buscar ofertas, consultar precios en USD y Bs., armar presupuestos, ubicar sucursales físicas y calcular la tasa de cambio de <strong>Tiendas Daka</strong> (Venezuela) desde tu terminal.
-</p>
-
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white" alt="Python" />
   <img src="https://img.shields.io/badge/CLI-Typer-ff6348" alt="Typer" />
   <img src="https://img.shields.io/badge/TUI-Rich-212121" alt="Rich" />
   <img src="https://img.shields.io/badge/License-MIT-4CAF50" alt="License" />
+</p>
+
+<h1 align="center">daka-cli</h1>
+
+<p align="center">
+  CLI no oficial para explorar productos, buscar ofertas, consultar precios en USD y Bs., armar presupuestos, ubicar sucursales físicas y calcular la tasa de cambio de <strong>Tiendas Daka</strong> (Venezuela) desde tu terminal.
 </p>
 
 <p align="center">
